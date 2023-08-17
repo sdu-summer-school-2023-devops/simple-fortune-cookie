@@ -1,11 +1,15 @@
-FROM golang:1.21.0 as builder
-
+# Build stage
+FROM golang:1.21.0 AS build
 WORKDIR /usr/src/app
-
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY . .
 RUN go mod download && go mod verify
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
-RUN go build -v -o /usr/local/bin/app ./...
+
+# Deploy stage
+FROM alpine
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=build /usr/src/app .
 EXPOSE 8080
-ENTRYPOINT ["app"]
+CMD ["./app"]
