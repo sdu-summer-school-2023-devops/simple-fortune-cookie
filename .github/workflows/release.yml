@@ -67,7 +67,7 @@ jobs:
       - changes
       - semantic-realease
     if: ${{ needs.changes.outputs.frontend == 'true' }}
-    uses: ./.github/actions/build
+    uses: ./.github/actions/build.yml
     with:
       workspace: frontend
       tags: |
@@ -83,7 +83,7 @@ jobs:
       - changes 
       - semantic-realease
     if: ${{ needs.changes.outputs.backend == 'true' }}
-    uses: ./.github/actions/build
+    uses: ./.github/actions/build.yml
     with:
       workspace: backend
       tags: |
