@@ -26,12 +26,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup kubectl
-        uses: tale/kubectl-action@v1
-        with:
-          base64-kube-config: ${{ secrets.KUBECONFIG }} 
+        run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
       - name: Deploy to cluster
-        run: kubectl apply -f ./k8s/${{inputs.workspace}}
+        run: kubectl --kubeconfig kubeconfig apply -f ./k8s/${{inputs.workspace}}
       - name: Deploy to cluster
-        run: kubectl set image deployment/${{inputs.workspace}} ${{inputs.workspace}}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{inputs.workspace}}-${{ inputs.version }}
+        run: kubectl --kubeconfig kubeconfig set image deployment/${{inputs.workspace}} ${{inputs.workspace}}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{inputs.workspace}}-${{ inputs.version }}
       - name: Verify deployment
-        run: kubectl rollout status deployment/${{inputs.workspace}}
+        run: kubectl --kubeconfig kubeconfig rollout status deployment/${{inputs.workspace}}
