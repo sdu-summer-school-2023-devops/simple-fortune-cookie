@@ -75,8 +75,8 @@ jobs:
     with:
       workspace: frontend
       tags: |
-        type=ray,value=frontend-latest
-        type=ray,value=frontend-${{ github.sha }}
+        type=raw,value=frontend-latest
+        type=raw,value=frontend-${{ github.sha }}
         type=semver,pattern=frontend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=frontend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=frontend-{{version}},value=${{ needs.semantic-realease.outputs.version }}
@@ -95,8 +95,8 @@ jobs:
     with:
       workspace: backend
       tags: |
-        type=ray,value=backend-latest
-        type=ray,value=backend-${{ github.sha }}
+        type=raw,value=backend-latest
+        type=raw,value=backend-${{ github.sha }}
         type=semver,pattern=backend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=backend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=backend-{{version}},value=${{ needs.semantic-realease.outputs.version }}

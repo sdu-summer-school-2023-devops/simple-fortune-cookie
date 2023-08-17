@@ -12,8 +12,8 @@ on:
         required: false
         type: string  
         default: |
-          type=ray,value=${{inputs.WORKSPACE}}-latest
-          type=ray,value=${{inputs.WORKSPACE}}-${{ github.sha }}
+          type=raw,value=${{inputs.WORKSPACE}}-latest
+          type=raw,value=${{inputs.WORKSPACE}}-${{ github.sha }}
 
 env:
   REGISTRY: ghcr.io
