@@ -63,6 +63,10 @@ jobs:
 
   build-frontend:
     name: Build frontend
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     needs: 
       - changes
       - semantic-realease
@@ -79,6 +83,10 @@ jobs:
 
   build-backend:
     name: Build backend
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     needs:
       - changes 
       - semantic-realease
