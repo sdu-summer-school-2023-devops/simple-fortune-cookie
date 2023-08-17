@@ -1,0 +1,53 @@
+name: Test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: true
+        default: 'develop'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-test:
+    name: Frontend test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: 
+          ref: ${{ github.event.inputs.branch || github.ref }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Run test
+        run: cd frontend && go test
+
+  backend-test:
+    name: Backend test
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: 
+          ref: ${{ github.event.inputs.branch || github.ref }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Run test
+        env:
+          REDIS_DNS: redis
+        run: cd backend && go test
