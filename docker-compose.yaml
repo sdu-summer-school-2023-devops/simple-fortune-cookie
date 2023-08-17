@@ -1,0 +1,28 @@
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+  backend:
+    build: ./backend/.
+    restart: unless-stopped
+    environment:
+      REDIS_DNS: redis
+  frontend:
+    build: ./frontend/.
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    environment:
+      BACKEND_PORT: "9000" #`BACKEND_PORT` - Port of the backend. Default: 9000
+      BACKEND_DNS: "backend" #`BACKEND_DNS` - DNS of the backend. Default: localhost
+
+
+
+volumes:
+  redis-data: 
+
