@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push: 
+    branches:
+      - main
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          frontend:
+            - 'frontend/**'
+          backend:
+            - 'backend/**'
+
+  semantic-realease:
+    name: Semantic release
+    environment: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm clean-install --force
+      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
+        run: npm audit signatures
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npx semantic-release >> semantic-release.log
+      - name: Archive release log
+        uses: actions/upload-artifact@v3
+        with:
+          name: semantic-release.log
+          path: semantic-release.log
+      - name: Get version
+        id: version
+        run: echo version=$(cat semantic-release.log | grep -oP "next release version is \K.*") >> $GITHUB_OUTPUT
+
+  build-frontend:
+    name: Build frontend
+    needs: 
+      - changes
+      - semantic-realease
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    uses: ./.github/workflows/build.yml
+    with:
+      workspace: frontend
+      tags: |
+        type=ray,value=frontend-latest
+        type=ray,value=frontend-${{ github.sha }}
+        type=semver,pattern=frontend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
+        type=semver,pattern=frontend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
+        type=semver,pattern=frontend-{{version}},value=${{ needs.semantic-realease.outputs.version }}
+
+  build-backend:
+    name: Build backend
+    needs:
+      - changes 
+      - semantic-realease
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    uses: ./.github/workflows/build.yml
+    with:
+      workspace: backend
+      tags: |
+        type=ray,value=backend-latest
+        type=ray,value=backend-${{ github.sha }}
+        type=semver,pattern=backend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
+        type=semver,pattern=backend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
+        type=semver,pattern=backend-{{version}},value=${{ needs.semantic-realease.outputs.version }}
