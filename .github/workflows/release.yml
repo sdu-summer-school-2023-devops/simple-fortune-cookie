@@ -6,6 +6,23 @@ on:
       - main
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          frontend:
+            - 'frontend/**'
+          backend:
+            - 'backend/**'
+
   semantic-realease:
     name: Semantic release
     environment: Release
@@ -43,9 +60,13 @@ jobs:
       - name: Get version
         id: version
         run: echo version=$(cat semantic-release.log | grep -oP "next release version is \K.*") >> $GITHUB_OUTPUT
+
   build-frontend:
     name: Build frontend
-    needs: semantic-realease
+    needs: 
+      - changes
+      - semantic-realease
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     uses: ./.github/actions/build
     with:
       workspace: frontend
@@ -55,9 +76,13 @@ jobs:
         type=semver,pattern=frontend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=frontend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=frontend-{{version}},value=${{ needs.semantic-realease.outputs.version }}
+
   build-backend:
     name: Build backend
-    needs: semantic-realease
+    needs:
+      - changes 
+      - semantic-realease
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     uses: ./.github/actions/build
     with:
       workspace: backend
