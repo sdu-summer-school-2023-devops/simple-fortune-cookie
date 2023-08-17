@@ -34,10 +34,9 @@ jobs:
       - name: deploy to cluster
         uses: kodermax/kubectl-aws-eks@master
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
-          IMAGE_TAG: ${{inputs.workspace}}-${{ inputs.version }}
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }} 
         with:
-          args: set image deployment/${{inputs.workspace}} ${{inputs.workspace}}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+          args: set image deployment/${{inputs.workspace}} ${{inputs.workspace}}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{inputs.workspace}}-${{ inputs.version }}
       - name: verify deployment
         uses: kodermax/kubectl-aws-eks@master
         env:
