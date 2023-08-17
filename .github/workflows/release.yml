@@ -70,7 +70,7 @@ jobs:
     needs: 
       - changes
       - semantic-realease
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }} && ${{ needs.semantic-realease.outputs.version != '' }}
     uses: ./.github/workflows/build.yml
     with:
       workspace: frontend
@@ -90,7 +90,7 @@ jobs:
     needs:
       - changes 
       - semantic-realease
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' }} && ${{ needs.semantic-realease.outputs.version != '' }}
     uses: ./.github/workflows/build.yml
     with:
       workspace: backend
