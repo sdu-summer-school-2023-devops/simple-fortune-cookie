@@ -103,23 +103,50 @@ jobs:
 
   deploy-frontend:
     name: Deploy frontend
-    uses: ./.github/workflows/deploy.yml
+    runs-on: ubuntu-latest
+    # uses: ./.github/workflows/deploy.yml
     needs:
       - build-frontend
       - semantic-realease
     if: ${{ needs.build-frontend.result == 'success' }}
-    with:
-      workspace: frontend
-      version: ${{ needs.semantic-realease.outputs.version }}
+    # with:
+    #   workspace: frontend
+    #   version: ${{ needs.semantic-realease.outputs.version }}
+    environment: Deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup kubectl
+        run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+      - name: Deploy to cluster
+        run: kubectl --kubeconfig kubeconfig apply -f ./k8s/frontend
+      - name: Deploy to cluster
+        run: kubectl --kubeconfig kubeconfig set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ inputs.version }}
+      - name: Verify deployment
+        run: kubectl --kubeconfig kubeconfig rollout status deployment/frontend
 
   deploy-backend:
     name: Deploy backend
-    uses: ./.github/workflows/deploy.yml
+    runs-on: ubuntu-latest
+    # uses: ./.github/workflows/deploy.yml
     needs:
       - build-backend
       - semantic-realease
     if: ${{ needs.build-backend.result == 'success' }}
-    with:
-      workspace: backend
-      version: ${{ needs.semantic-realease.outputs.version }}
+    environment: Deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup kubectl
+        run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+      - name: Demo
+        run: echo "${{ secrets.KUBECONFIG }}"
+      - name: Demo 2
+        run: cat kubeconfig
+      - name: Deploy to cluster
+        run: kubectl --kubeconfig kubeconfig apply -f ./k8s/backend
+      - name: Deploy to cluster
+        run: kubectl --kubeconfig kubeconfig set image deployment/backend backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:backend-${{ inputs.version }}
+      - name: Verify deployment
+        run: kubectl --kubeconfig kubeconfig rollout status deployment/backend
     
