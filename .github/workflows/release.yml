@@ -100,3 +100,26 @@ jobs:
         type=semver,pattern=backend-{{major}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=backend-{{major}}.{{minor}},value=${{ needs.semantic-realease.outputs.version }}
         type=semver,pattern=backend-{{version}},value=${{ needs.semantic-realease.outputs.version }}
+
+  deploy-frontend:
+    name: Deploy frontend
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - build-frontend
+      - semantic-realease
+    if: ${{ needs.build-frontend.result == 'success' }}
+    with:
+      workspace: frontend
+      version: ${{ needs.semantic-realease.outputs.version }}
+
+  deploy-backend:
+    name: Deploy backend
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - build-backend
+      - semantic-realease
+    if: ${{ needs.build-backend.result == 'success' }}
+    with:
+      workspace: backend
+      version: ${{ needs.semantic-realease.outputs.version }}
+    

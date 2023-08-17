@@ -1,0 +1,46 @@
+name: Deploy to AWS
+
+on:
+  workflow_call:
+    inputs:
+      workspace:
+        description: 'Workspace path. What application to deply.'
+        required: true
+        type: string
+      version:
+        description: 'Version to use in system'
+        required: false
+        type: string  
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy ${{inputs.workspace}}
+    runs-on: ubuntu-latest
+    environment: Deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: deploy to cluster
+        uses: kodermax/kubectl-aws-eks@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        with:
+          args: apply -f ./k8s/${{inputs.workspace}}
+      - name: deploy to cluster
+        uses: kodermax/kubectl-aws-eks@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+          IMAGE_TAG: ${{inputs.workspace}}-${{ inputs.version }}
+        with:
+          args: set image deployment/${{inputs.workspace}} ${{inputs.workspace}}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+      - name: verify deployment
+        uses: kodermax/kubectl-aws-eks@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        with:
+          args: rollout status deployment/${{inputs.workspace}}
