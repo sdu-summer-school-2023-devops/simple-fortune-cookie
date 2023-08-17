@@ -8,10 +8,7 @@ on:
         description: 'Branch to test'
         required: true
         default: 'develop'
-  push:
   pull_request:
-    branches: 
-      - main
 
 permissions:
   contents: read
