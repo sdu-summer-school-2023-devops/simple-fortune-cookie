@@ -24,7 +24,12 @@ spec:
         name: frontend
         env:
         - name: BACKEND_DNS
-          value: "backend"
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: BACKEND_DNS
         - name: BACKEND_PORT
-          value: "9000"
-        
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-configmap
+              key: BACKEND_PORT
