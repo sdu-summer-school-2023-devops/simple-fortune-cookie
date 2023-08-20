@@ -24,8 +24,10 @@ jobs:
         filters: |
           frontend:
             - 'frontend/**'
+            - 'k8s/frontend/**'
           backend:
             - 'backend/**'
+            - 'k8s/backend/**'
 
   semantic-realease:
     name: Semantic release
